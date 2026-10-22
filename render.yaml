@@ -1,0 +1,40 @@
+databases:
+  - name: sitecheck-db-Farris
+    databaseName: sitecheck
+    user: postgres
+    plan: free
+    region: singapore
+
+services:
+  - type: web
+    name: sitecheck-db-Farris
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASES_URL
+        frontDatabase:
+          name: sitecheck-db-Farris
+          property: connectionString
+      - key: CLIENT_URL
+        value: https://sitecheck-frontend-farris.onrender.com
+  
+  - type: web
+    name: sitecheck-frontend-farris
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://sitecheck-backend-farris.onrender.com
+
+    routes:
+      - type: web
+        source: /*
+        destination: /index.html
+
+

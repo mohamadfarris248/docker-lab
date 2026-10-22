@@ -1,0 +1,55 @@
+services:
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Fafitma253316
+      POSTGRES_DB: sitecheck
+    ports:
+    # 5433 on your PC, because a locally installed PostgreSQL server is already using 5432 
+    # Inside the Docker network the database still listen on 5432
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sitecheck"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+ 
+  frontend:
+    build: 
+      context: ./frontend
+      args:
+        VITE_API_URL: http://backend:8000
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+ 
+  pgadmin:
+    image: dpage/pgadmin4:7.7
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    volumes:
+      - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
+  pgadmin-data:
