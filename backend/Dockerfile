@@ -5,11 +5,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-#Install dependencies
+# Install dependencies first
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app /app
+# Copy the entire backend directory into /app (this keeps your 'app' folder intact)
+COPY . .
 
 # Render set $PORT
 ENV PORT=8000
